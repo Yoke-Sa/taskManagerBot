@@ -1,0 +1,28 @@
+[
+    {
+        "id": "name",
+        "label": "タスク名",
+        "placeholder": "食料の調達"
+    },
+    {
+        "id": "prize",
+        "label": "報酬金額",
+        "placeholder": "5000円～"
+    },
+    {
+        "id": "priority",
+        "label": "優先度",
+        "placeholder": "高"
+    },
+    {
+        "id": "contract",
+        "label": "契約内容",
+        "placeholder": "業務委託契約 A"
+    },
+    {
+        "id": "overview",
+        "label": "タスク概要",
+        "placeholder": "スーパーに行ってカップラーメンを10個買う\nその後無事に帰還する",
+        "style": 2
+    }
+]
