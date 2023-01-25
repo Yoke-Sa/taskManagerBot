@@ -149,7 +149,7 @@ async function checkMembers(client) {
 
 		// タスク受託者の更新
 		for (const task of task_list) {
-			if (task.isAccepted) {
+			if (task.isAssigned) {
 				// タスク受託者のidを取得
 				const member = members_list.find(
 					(member) => member.id === task.entrustee.id

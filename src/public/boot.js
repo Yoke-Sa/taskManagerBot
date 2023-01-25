@@ -9,7 +9,7 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { token, interval } = process.env;
+const { token, check_interval, task_interval } = process.env;
 
 // 定期的に処理を実行するためにcronを読み込む
 const cron = require('node-cron');
@@ -49,13 +49,16 @@ client.once('ready', () => {
 
 	// コマンドが実行されたら処理が実行される
 	taskCommand(client);
-	messageCommand(client);
 
-	// 日付が変わるタイミングで対象者にメンションを飛ばす
-	cron.schedule(interval, () => {
-		mentionEntrustee(client);
+	// 朝7時になったタイミングでメンバーチェック(何かしら報告する)
+	cron.schedule(check_interval, () => {
 		checkMembers(client);
 	});
+
+	// 日付が変わるタイミングで対象者にメンションを飛ばす
+	cron.schedule(task_interval, () => {
+		mentionEntrustee(client);
+	})
 });
 
 // Discordへ接続する
