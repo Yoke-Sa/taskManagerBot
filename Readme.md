@@ -1,4 +1,4 @@
-# taskManager bot
+# taskManager bot v1.0
 
 > Install some node-packages
 
