@@ -36,7 +36,7 @@ async function moveRoles(client) {
 	const makeRolesMenu = async () => {
 		// メンション可能なロール
 		const mentionable_roles = guild.roles.cache
-			.filter((role) => role.mentionable)
+			.filter((role) => role.mentionable && role.name !== 'リーダー')
 			.map((role) => role);
 
 		// ロール申請所にセットする選択メニュー
@@ -62,7 +62,7 @@ async function moveRoles(client) {
 	// ロール申請所にメッセージが1つも送られていない時のみ送信
 	if (!role_channel.lastMessageId) {
 		await role_channel.send({
-			embeds: [new EmbedBuilder().setTitle('選択したロールを付与するよ')],
+			embeds: [new EmbedBuilder().setTitle('選択したロールを付与します')],
 			components: [new ActionRowBuilder().setComponents(roles_menu)],
 		});
 	}
@@ -148,14 +148,10 @@ async function moveRoles(client) {
 			// 確認画面の作成
 			const modal = new ModalBuilder()
 				.setCustomId('move_roles')
-				.setTitle('本当にこれでいい？設定しちゃうよ？');
+				.setTitle('この内容でお間違いありませんか？');
 
 			// 確認画面に表示欄を追加
-			for (const field of input_fields) {
-				modal.addComponents(
-					new ActionRowBuilder().addComponents(field)
-				);
-			}
+			for (const field of input_fields) modal.addComponents(new ActionRowBuilder().addComponents(field));
 
 			// 作成した画面を返す
 			return modal;
@@ -163,6 +159,8 @@ async function moveRoles(client) {
 
 		// 確認画面の表示
 		await select.showModal(await makeModal());
+
+		return;
 	});
 
 	// 確認画面の送信ボタンへの応答
@@ -192,9 +190,7 @@ async function moveRoles(client) {
 
 			// 確認用の文字列を作成
 			let results = '+ 現在の設定 +';
-			for (const role of member_roles) {
-				results += `\n ・${role}`;
-			}
+			for (const role of member_roles) results += `\n ・${role}`;
 
 			// 作成した文字列を返す
 			return results;
@@ -208,8 +204,7 @@ async function moveRoles(client) {
 			for (const role of add_roles) await action.member.roles.add(role);
 
 			// ロールを除去
-			for (const role of remove_roles)
-				await action.member.roles.remove(role);
+			for (const role of remove_roles) await action.member.roles.remove(role);
 
 			// 送信用テキストの作成
 			let result = await makeRolesList(),
@@ -229,19 +224,21 @@ async function moveRoles(client) {
 			ephemeral: true,
 			embeds: [
 				new EmbedBuilder()
-					.setTitle('ロールを更新したよ')
+					.setTitle('ロールを更新しました')
 					.setDescription(codeBlock('diff', await moveMemberRoles())),
 			],
 		});
 
 		// 選択メニューのリセット
 		await role_channel.messages.cache.get(role_channel.lastMessageId).edit({
-			embeds: [new EmbedBuilder().setTitle('選択したロールを付与するよ')],
+			embeds: [new EmbedBuilder().setTitle('選択したロールを付与します')],
 			components: [new ActionRowBuilder().setComponents(roles_menu)],
 		});
 
 		// 変数の初期化
 		(add_roles = []), (remove_roles = []), (adds = ''), (removes = '');
+
+		return;
 	});
 }
 

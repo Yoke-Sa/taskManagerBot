@@ -1,0 +1,42 @@
+{
+	"channelId": "1030289106518933553",
+	"guildId": "1030289106091135089",
+	"id": "1071667323397746849",
+	"createdTimestamp": 1675575800514,
+	"type": 0,
+	"system": false,
+	"content": "",
+	"authorId": "1067780995228635186",
+	"pinned": false,
+	"tts": false,
+	"nonce": null,
+	"embeds": [
+		{
+			"type": "rich",
+			"title": "今日も平和",
+			"description": "今日は2月5日(日)です！\n何事にも全力で挑んでいこう！\n<@293688449234370572>さん！"
+		}
+	],
+	"components": [],
+	"attachments": [],
+	"stickers": [],
+	"position": null,
+	"editedTimestamp": null,
+	"mentions": {
+		"everyone": false,
+		"users": [],
+		"roles": [],
+		"crosspostedChannels": [],
+		"repliedUser": null,
+		"members": [],
+		"channels": []
+	},
+	"webhookId": null,
+	"groupActivityApplicationId": null,
+	"applicationId": null,
+	"activity": null,
+	"flags": 0,
+	"reference": null,
+	"interaction": null,
+	"cleanContent": ""
+}

@@ -9,7 +9,15 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { guild_id, chitchat_id, task_path, members_path, random_path } = process.env;
+const {
+	guild_id,
+	chitchat_id,
+	task_path,
+	members_path,
+	random_path,
+	client_id,
+	send_path,
+} = process.env;
 
 // 報告用に埋め込みを使う
 const { EmbedBuilder } = require('@discordjs/builders');
@@ -20,6 +28,7 @@ const fs = require('../function/file');
 // 毎日報告用
 const { getMonth, getDay } = require('../function/date');
 const { rand } = require('../function/mt');
+const setFirstFlag = require('./set_flag');
 
 /**
  * - サーバーにいるメンバーの情報を定期的に取得し、ファイルに保存されたメンバーリストと一致しなければ逐次更新及び通告する
@@ -44,6 +53,9 @@ async function checkMembers(client) {
 		});
 	}
 
+	// 一日一回だけ実行
+	if (!setFirstFlag()) return;
+
 	// 通信先のdiscordサーバーを取得
 	const guild = client.guilds.cache.get(guild_id);
 
@@ -56,30 +68,27 @@ async function checkMembers(client) {
 		}));
 
 	// ファイルからデータを読み込む
-	const prev_list = fs.existsSync(members_path) ? JSON.parse(fs.readFileSync(members_path)) : [];
+	const prev_list = fs.existsSync(members_path)
+		? JSON.parse(fs.readFileSync(members_path))
+		: [];
 
 	// メンバーリストのデータが存在してれば処理を行う
 	if (prev_list.length) {
 		// 新規メンバーリストを作成
-		const new_members = members_list.filter(
-			(member) => !prev_list.some((prev) => prev.id === member.id)
-		);
+		const new_members = members_list.filter((member) => !prev_list.some((prev) => prev.id === member.id));
 
 		// 脱退メンバーリストを作成
-		const left_members = prev_list.filter(
-			(prev) => !members_list.some((member) => member.id === prev.id)
-		);
+		const left_members = prev_list.filter((prev) => !members_list.some((member) => member.id === prev.id));
 
 		// 新規メンバーがいた場合は通告を飛ばす
 		if (new_members.length) {
 			// テキストの作成
 			let text = '';
-			for (const member of new_members) {
-				text += `<@${member.id}>君\n`;
-			}
+			for (const member of new_members) text += `<@${member.id}>さん\n`;
+
 			sendNotification(
-				'新たにメンバーが増えたよ',
-				text + 'これからよろしくね！'
+				'新たにメンバーが増えました',
+				text + 'これからよろしくお願いします！'
 			);
 		}
 
@@ -87,12 +96,11 @@ async function checkMembers(client) {
 		if (left_members.length) {
 			// テキストの作成
 			let text = '';
-			for (const member of left_members) {
-				text += `<@${member.id}>君\n`;
-			}
+			for (const member of left_members) text += `<@${member.id}>さん\n`;
+
 			sendNotification(
-				'メンバーが抜けちゃったよ',
-				text + '今までありがとう！'
+				'メンバーが抜けてしまいました...',
+				text + '今までありがとうございました'
 			);
 		}
 
@@ -114,34 +122,44 @@ async function checkMembers(client) {
 		if (id_list.length) {
 			// 名前変えた通告
 			sendNotification(
-				'私は見ているぞ',
-				`名前が変わってるよねえ！？\n${log_list.join(
-					'\n'
-				)} \n名前も気持ちも一新して、これからも頑張ろうね！\n\n<@${id_list.join(
-					'>君\n<@'
-				)}>君`,
-				`<@${id_list.join('>\n<@')}>`
+				'名前が変更されました',
+				`${log_list.join('\n')} \n名前も気持ちも一新して、これからも頑張りましょう！\n\n<@${id_list.join('>さん\n<@')}>さん`,`<@${id_list.join('>\n<@')}>`
 			);
-		}
-		else if (!new_members.length && !left_members.length) {
+		} else if (!new_members.length && !left_members.length) {
 			// 毎日報告用ランダムメッセージ
 			const random_text = JSON.parse(fs.readFileSync(random_path));
 
 			// 一日一回は通告
 			sendNotification(
 				'今日も平和',
-				`今日は${getMonth()}${getDay()}です！\n${random_text[rand(0, random_text.length - 1)]}\n<@${members_list[rand(0, members_list.length - 1)].id}>君！`
+				`今日は${getMonth()}${getDay()}です！\n	${random_text[rand(0, random_text.length - 1)]}\n<@${members_list[rand(0, members_list.length - 1)].id}>さん！`
 			);
 		}
 
+		// 雑談チャンネルに送信されたメッセージを取得
+		const messages = await guild.channels.cache
+			.get(chitchat_id)
+			.messages.fetch({ limit: 100 });
+
+		// 配列に変換
+		const msg_array = [...messages.values()];
+
+		// 自身(タスク管理bot)が送った最新のメッセージを取得
+		const my_msg = msg_array.find((msg) => (msg.author.id = client_id));
+
+		// メッセージを送った日付を取得
+		fs.writeFileSync(send_path, JSON.stringify(my_msg));
+
 		// ファイルのデータが現在のデータと異なる場合
-		if (members_list !== prev_list)
+		if (JSON.stringify(members_list) !== JSON.stringify(prev_list))
 			// メンバーリストを上書き
 			fs.writeFileSync(members_path, JSON.stringify(members_list));
 	}
 
 	// ファイルからデータを読み込む
-	const task_list = fs.existsSync(task_path) ? JSON.parse(fs.readFileSync(task_path)) : [];
+	const task_list = fs.existsSync(task_path)
+		? JSON.parse(fs.readFileSync(task_path))
+		: [];
 
 	if (task_list.length) {
 		/** タスクを持ち逃げした人がいたら格納する配列 */
@@ -149,25 +167,25 @@ async function checkMembers(client) {
 
 		// タスク受託者の更新
 		for (const task of task_list) {
-			if (task.isAssigned) {
-				// タスク受託者のidを取得
-				const member = members_list.find(
-					(member) => member.id === task.entrustee.id
-				);
-				// 現在もサーバーにいるかで処理分岐
-				if (member) {
-					// 表示名が変更されていたら更新
-					if (task.entrustee.name !== member.name)
-						task.entrustee.name = member.name;
-				} else missing_list.push(task.entrustee.id);
-			}
+			if (!task.isAssigned) continue;
+
+			// タスク受託者のidを取得
+			const member = members_list.find(
+				(member) => member.id === task.entrustee.id
+			);
+			// 現在もサーバーにいるかで処理分岐
+			if (member) {
+				// 表示名が変更されていたら更新
+				if (task.entrustee.name !== member.name)
+					task.entrustee.name = member.name;
+			} else missing_list.push(task.entrustee.id);
 		}
 
 		// タスクを持ち逃げしたメンバーがいた場合
 		if (missing_list.length)
 			sendNotification(
-				'タスクを持ち逃げしていった輩がいるよ',
-				`<@${missing_list.join('>君\n<@')}>君`
+				'タスク所持済みの脱退者を検出しました',
+				`<@${missing_list.join('>\n<@')}>`
 			);
 
 		// タスクデータを上書き

@@ -9,7 +9,7 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { client_id, guild_id, token } = process.env;
+const { client_id, token } = process.env;
 
 // スラッシュコマンド
 const { SlashCommandBuilder } = require('@discordjs/builders');
@@ -26,11 +26,11 @@ const commands = [
 	// タスク受注コマンド
 	new SlashCommandBuilder()
 		.setName('task_accept')
-		.setDescription('タスクを受注する'),
+		.setDescription('タスクを受注します'),
 	// タスク削除コマンド
 	new SlashCommandBuilder()
 		.setName('task_remove')
-		.setDescription('タスクを削除する')
+		.setDescription('タスクを削除します')
 		// 管理者権限を有するメンバーのみ閲覧可能
 		.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 		// コマンドの引数
@@ -45,7 +45,7 @@ const commands = [
 	// タスク登録コマンド
 	new SlashCommandBuilder()
 		.setName('task_register')
-		.setDescription('タスクを登録する')
+		.setDescription('タスクを登録します')
 		// 管理者権限を有するメンバーのみ閲覧可能
 		.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
 ].map((cmd) => cmd.toJSON()); // JSONオブジェクトに変換
@@ -53,23 +53,15 @@ const commands = [
 /**
  * - スラッシュコマンドを登録する
  */
-function resistCommand() {
+function registerCommand(guild_id) {
 	// APIのバージョン, botのトークンを指定してREST型のインスタンスを生成
 	const rest = new REST({ version: '10' }).setToken(token);
 
 	// 指定したサーバー及びbotにコマンドを登録
 	rest.put(Routes.applicationGuildCommands(client_id, guild_id), {
 		body: commands,
-	})
-		// 成功したらログに表示
-		.then(() => {
-			console.log('コマンドを追加しました。');
-		})
-		// 失敗したら理由を表示
-		.catch((err) => {
-			console.error(err);
-		});
+	});
 }
 
 // 外部ファイルから参照可能にする
-module.exports = resistCommand;
+module.exports = registerCommand;

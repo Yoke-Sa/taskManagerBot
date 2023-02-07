@@ -9,74 +9,19 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { token, check_interval, task_interval } = process.env;
-
-// 定期的に処理を実行するためにcronを読み込む
-const cron = require('node-cron');
-
-// bot君のインスタンス生成 v14テンプレ(よけ版)
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
-const intents = GatewayIntentBits;
-const client = new Client({
-	intents: [
-		intents.Guilds,
-		intents.GuildMembers,
-		intents.GuildMessages,
-		intents.GuildPresences,
-		intents.MessageContent,
-	],
-});
+const { guild_id } = process.env;
 
 // 外部ファイルで定義した関数を読み込む
-const registCommand = require('../command/register');
-const taskCommand = require('../command/response/task');
-const mentionEntrustee = require('../cron/mention_entrustee');
-const checkMembers = require('../cron/check_members');
-const moveRoles = require('../cron/move_roles');
+const registerCommand = require('../command/register');
 
-// 起動後に一度だけ呼ばれる
-client.once('ready', () => {
-	// コマンド登録に時間がかかるので非同期にして並行処理
-	new Promise((resolve) => {
-		registCommand(); // botにコマンドを登録
-		resolve(); // 処理が終了したら通知
+new Promise((resolve) => {
+	registerCommand(guild_id);
+	resolve();
+})
+	.then(() => {
+		console.log(`\nコマンドを追加しました。`);
+		require('./boot');
 	})
-		.then(() => console.log(`\n${client.user.tag}: 正常に起動しました。`))
-		.finally(() => {
-			// Discord上でのbotステータス
-			client.user.setPresence({
-				activities: [
-					{ name: 'お仕事の管理', type: ActivityType.Playing },
-				],
-				status: 'online',
-			});
-
-			// ロール申請所
-			moveRoles(client);
-
-			// コマンドが実行されたら処理が実行される
-			taskCommand(client);
-
-			// 朝7時になったタイミングでメンバーチェック(何かしら報告する)
-			cron.schedule(check_interval, () => {
-				checkMembers(client);
-			});
-
-			// 日付が変わるタイミングで対象者にメンションを飛ばす
-			cron.schedule(task_interval, () => {
-				mentionEntrustee(client);
-			})
-		});
-});
-
-// Discordへ接続する
-client.login(token);
-
-// ネットワーク接続エラーでプログラムがクラッシュしないようにする
-process.on('multipleResolves', (type, promise, reason) => {
-	if (
-		(reason?.toLocaleString() || '') ===
-		'Error: Cannot perform IP discovery - socket closed'
-	)
-		return;
-});
+	.catch((err) => {
+		console.error(err);
+	});

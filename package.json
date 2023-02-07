@@ -1,38 +1,43 @@
 {
-  "name": "task",
+  "name": "discord_bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "boot.js",
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "corepack": "^0.14.2",
+    "discord-api-types": "^0.37.29",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "fast-deep-equal": "^3.1.3",
+    "file-type": "^18.0.0",
+    "ieee754": "^1.2.1",
+    "inherits": "^2.0.4",
+    "lodash": "^4.17.21",
+    "lodash.snakecase": "^4.1.1",
+    "node-cron": "^3.0.2",
+    "npm": "^8.19.2",
+    "peek-readable": "^5.0.0",
+    "readable-stream": "^3.6.0",
+    "readable-web-to-node-stream": "^3.0.2",
+    "safe-buffer": "^5.2.1",
+    "streamsearch": "^1.1.0",
+    "string_decoder": "^1.3.0",
+    "strtok3": "^7.0.0",
+    "token-types": "^5.0.1",
+    "ts-mixer": "^6.0.2",
+    "tslib": "^2.4.1",
+    "undici": "^5.16.0",
+    "util-deprecate": "^1.0.2",
+    "uuid": "^8.3.2",
+    "ws": "^8.12.0"
+  },
   "scripts": {
+    "boot": "node ./src/public/boot.js",
+    "update": "node ./src/public/update.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "discord.js": "^14.7.1",
-    "dotenv": "^16.0.3",
-    "jsdoc": "^4.0.0",
-    "node-cron": "^3.0.2",
-    "openai": "^3.1.0"
-  },
-  "devDependencies": {
-    "documentation": "^14.0.1"
-  },
-  "prettier":{
-      "editor.formatOnSave": true,
-      "editor.formatOnSaveMode": "file",
-      "code-runner.saveAllFilesBeforeRun": true,
-      "code-runner.saveFileBeforeRun": true,
-      "files.autoSave": "off",
-      "arrowParens": "always",
-      "bracketSameLine": true,
-      "bracketSpacing": true,
-      "htmlWhitespaceSensitivity": "ignore",
-      "printWidth": 80,
-      "semi": true,
-      "singleQuote": true,
-      "tabWidth": 4,
-      "singleAttributePerLine": true
-  }
+  "license": "ISC"
 }

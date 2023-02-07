@@ -2,12 +2,12 @@
     {
         "id": "name",
         "label": "タスク名",
-        "placeholder": "食料の調達"
+        "placeholder": "コードエディタの作成"
     },
     {
         "id": "prize",
         "label": "報酬金額",
-        "placeholder": "5000円～"
+        "placeholder": "1000円～"
     },
     {
         "id": "priority",
@@ -22,7 +22,7 @@
     {
         "id": "overview",
         "label": "タスク概要",
-        "placeholder": "スーパーに行ってカップラーメンを10個買う\nその後無事に帰還する",
+        "placeholder": "タスク概要を入力してください",
         "style": 2
     }
 ]

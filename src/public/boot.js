@@ -9,7 +9,7 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { token, check_interval, task_interval } = process.env;
+const { token, check_interval, task_interval, interval } = process.env;
 
 // 定期的に処理を実行するためにcronを読み込む
 const cron = require('node-cron');
@@ -38,11 +38,14 @@ client.once('ready', () => {
 	// Discord上でのbotステータス
 	client.user.setPresence({
 		activities: [{ name: 'お仕事の管理', type: ActivityType.Competing }],
-		status: 'idle',
+		status: 'online',
 	});
 
 	// 起動確認
 	console.log(`\n${client.user.tag} : 正常に起動しました。`);
+
+	// メンバーの更新
+	checkMembers(client);
 
 	// ロール申請所
 	moveRoles(client);
@@ -58,7 +61,7 @@ client.once('ready', () => {
 	// 日付が変わるタイミングで対象者にメンションを飛ばす
 	cron.schedule(task_interval, () => {
 		mentionEntrustee(client);
-	})
+	});
 });
 
 // Discordへ接続する
@@ -66,9 +69,5 @@ client.login(token);
 
 // ネットワーク接続エラーでプログラムがクラッシュしないようにする
 process.on('multipleResolves', (type, promise, reason) => {
-	if (
-		(reason?.toLocaleString() || '') ===
-		'Error: Cannot perform IP discovery - socket closed'
-	)
-		return;
+	if ((reason?.toLocaleString() || '') === 'Error: Cannot perform IP discovery - socket closed') return;
 });
