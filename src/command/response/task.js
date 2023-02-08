@@ -9,16 +9,17 @@
 
 // 隠しファイルから環境変数としてデータを受け取る
 require('dotenv').config();
-const { task_id, schedule_id, format_path, task_path } = process.env;
+const { schedule_id, task_id, format_path, task_path } = process.env;
 
 // 使用するものだけ読み込む
 const { Events, TextInputStyle } = require('discord.js');
 const {
 	ActionRowBuilder,
+	codeBlock,
 	EmbedBuilder,
+	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextInputBuilder,
-	ModalBuilder,
 } = require('@discordjs/builders');
 
 /** * fileSystemに関連する自作関数をまとめたモジュール  */
@@ -65,7 +66,12 @@ function taskManager(client) {
 				if (!task_list.length) {
 					// コマンドに返信する
 					await cmd.reply({
-						embeds: [new EmbedBuilder().setTitle('受注出来る仕事がありません'),],
+						ephemeral: true,
+						embeds: [
+							new EmbedBuilder().setTitle(
+								'受注出来る仕事がありません'
+							),
+						],
 					});
 
 					return;
@@ -85,14 +91,23 @@ function taskManager(client) {
 					if (!unassigned_tasks.length) {
 						// コマンドに返信する
 						await cmd.reply({
-							embeds: [new EmbedBuilder().setTitle('受注出来る仕事がありません'),],
+							ephemeral: true,
+							embeds: [
+								new EmbedBuilder().setTitle(
+									'受注出来る仕事がありません'
+								),
+							],
 						});
 
 						return;
 					} else {
 						// コマンドに返信する
 						await cmd.reply({
-							embeds: [new EmbedBuilder().setTitle('タスクを受注します'),],
+							embeds: [
+								new EmbedBuilder().setTitle(
+									'タスクを受注します'
+								),
+							],
 							components: [
 								new ActionRowBuilder().setComponents(
 									new StringSelectMenuBuilder()
@@ -105,7 +120,9 @@ function taskManager(client) {
 												value: String(task.index),
 											}))
 										)
-										.setPlaceholder('受注するタスクの識別番号を選択')
+										.setPlaceholder(
+											'受注するタスクの識別番号を選択'
+										)
 								),
 							],
 						});
@@ -126,10 +143,16 @@ function taskManager(client) {
 				if (unassigned_tasks.length >= 25) {
 					// コマンドに返信する
 					await cmd.reply({
+						ephemeral: true,
 						embeds: [
 							new EmbedBuilder()
 								.setTitle('発注可能上限に達しています')
-								.setDescription('タスクを受注してもらうか、削除してください'),
+								.setDescription(
+									codeBlock(
+										'fix',
+										'タスクを受注してもらうか、削除してください。'
+									)
+								),
 						],
 					});
 
@@ -155,8 +178,14 @@ function taskManager(client) {
 
 					// コマンドに返信する
 					await cmd.reply({
-						embeds: [new EmbedBuilder().setTitle('タスクの登録を開始します'),],
-						components: [new ActionRowBuilder().setComponents(roles_menu),],
+						embeds: [
+							new EmbedBuilder().setTitle(
+								'タスクの登録を開始します'
+							),
+						],
+						components: [
+							new ActionRowBuilder().setComponents(roles_menu),
+						],
 					});
 
 					return;
@@ -176,7 +205,11 @@ function taskManager(client) {
 					// コマンドに返信する
 					await cmd.reply({
 						ephemeral: true,
-						embeds: [new EmbedBuilder().setTitle('削除できる仕事がありません'),],
+						embeds: [
+							new EmbedBuilder().setTitle(
+								'削除できる仕事がありません'
+							),
+						],
 					});
 
 					return;
@@ -188,17 +221,25 @@ function taskManager(client) {
 					if (target > prev_task.length) {
 						// コマンドに返信する
 						await cmd.reply({
+							ephemeral: true,
 							embeds: [
 								new EmbedBuilder()
 									.setTitle('不正な値は受け付けません')
-									.setDescription(`${target}個の仕事はありません。\n今あるのは${prev_task.length}個のみです`),
+									.setDescription(
+										codeBlock(
+											'fix',
+											`　${target}個も仕事がありません。\n今あるのは${prev_task.length}個のみです。`
+										)
+									),
 							],
 						});
 
 						return;
 					} else {
 						// 識別番号が引数と一致するタスクを取得
-						del_task = prev_task.find((prev) => prev.index === target);
+						del_task = prev_task.find(
+							(prev) => prev.index === target
+						);
 
 						// 確認画面用のモーダルを作成
 						const modal = new ModalBuilder()
@@ -328,7 +369,9 @@ function taskManager(client) {
 			// 設定画面に入力欄を追加
 			const fields_array = makeTextInputArray();
 			for (const field of fields_array)
-				modal.addComponents(new ActionRowBuilder().addComponents(field));
+				modal.addComponents(
+					new ActionRowBuilder().addComponents(field)
+				);
 
 			// 設定画面を表示
 			await select.showModal(modal);
@@ -360,10 +403,17 @@ function taskManager(client) {
 				 */
 				const isValidDate = () => {
 					// 入力された納期が日付として有効でなければfalseを返す
-					if (!deadline.match('^([1-9]|1[0-2])/([1-9]|[12][0-9]|3[01])$')) return false;
+					if (
+						!deadline.match(
+							'^([1-9]|1[0-2])/([1-9]|[12][0-9]|3[01])$'
+						)
+					)
+						return false;
 
 					// 月と日で分けて取得
-					const month = Number(deadline.substring(0, deadline.indexOf('/')));
+					const month = Number(
+						deadline.substring(0, deadline.indexOf('/'))
+					);
 					const day = Number(
 						deadline.substring(
 							deadline.indexOf('/') + 1,
@@ -391,47 +441,44 @@ function taskManager(client) {
 						embeds: [
 							new EmbedBuilder()
 								.setTitle(`${deadline}は無効な日付です`)
-								.setDescription('納期は「 半角数字/半角数字 」の形で入力をしてください。\nありもしない日付は入力しないでください'),
+								.setDescription(
+									codeBlock(
+										'fix',
+										'　納期は「半角数字/半角数字」の形で入力してください。\nありもしない日付は入力しないでください。'
+									)
+								),
 						],
 					});
 
 					return;
 				} else {
-					// 受注タスクの名前を入れる
-					let accept_name = '';
-
 					// ファイルからデータを読み込む
 					const task_list = JSON.parse(fs.readFileSync(task_path));
 
-					// 受注済みタスクのメッセージIDを入れる
-					let accept_id = '';
-
-					// 同時受注による被り防止フラグ
-					let isFirst = false;
+					// 受注タスクの名前、メッセージID、同時受注による被り防止フラグ
+					let accept_name = '',
+						accept_id = '',
+						isFirst = false;
 
 					// 受注したタスクを受注済に変更
 					for (const task of task_list) {
 						// メニューで選択したタスクの識別番号と一致した場合
-						if (!(task.index === accept_index && !task.isAssigned)) continue;
+						if (!(task.index === accept_index && !task.isAssigned))
+							continue;
 
-						// 受注済フラグをセット
+						// 受注済フラグ、受託者のidと名前、納期をセット
 						task.isAssigned = true;
-
-						// 受託者のidと名前をセット
 						task.entrustee = {
 							id: action.user.id,
 							name: action.member.displayName, // discordでの「表示名」(ニックネームあるならニックネームをとる)
 						};
-
-						// 納期をセット
 						task.deadline = deadline;
 
-						// 通告用にタスク名を取得
+						// 通告用にタスク名、メッセージIDを取得
 						accept_name = task.name;
-
-						// メッセージIDを取得
 						accept_id = task.message_id;
 
+						// 受注受付フラグを立てる
 						isFirst = true;
 					}
 
@@ -442,7 +489,12 @@ function taskManager(client) {
 							embeds: [
 								new EmbedBuilder()
 									.setTitle('すでに受託者が存在します')
-									.setDescription(`先を越されてしまいました...`),
+									.setDescription(
+										codeBlock(
+											'fix',
+											`　先を越されてしまいました...`
+										)
+									),
 							],
 						});
 
@@ -464,7 +516,9 @@ function taskManager(client) {
 									embeds: [
 										new EmbedBuilder()
 											.setTitle(msg.embeds[0].title)
-											.setDescription(`${msg.embeds[0].description}\n\n 受注済み: ${action.user}`),
+											.setDescription(
+												`${msg.embeds[0].description}\n 受注済み: ${action.user}`
+											),
 									],
 								})
 							);
@@ -477,7 +531,9 @@ function taskManager(client) {
 								embeds: [
 									new EmbedBuilder()
 										.setTitle('タスクが受注されました')
-										.setDescription(`タスク: ${accept_name}\n受託者: <@${action.user.id}>\n納期  : ${deadline}`),
+										.setDescription(
+											`タスク: ${accept_name}\n受託者: <@${action.user.id}>\n納期　: ${deadline}`
+										),
 								],
 							});
 
@@ -486,7 +542,9 @@ function taskManager(client) {
 							embeds: [
 								new EmbedBuilder()
 									.setTitle('受注が完了しました')
-									.setDescription(`<#${schedule_id}>をチェック`),
+									.setDescription(
+										`<#${schedule_id}>をチェック`
+									),
 							],
 						});
 					}
@@ -504,7 +562,8 @@ function taskManager(client) {
 					});
 
 				// 設定画面で入力したデータを取得し、配列に格納
-				for (const id of id_list) task_items.push(action.fields.getTextInputValue(id));
+				for (const id of id_list)
+					task_items.push(action.fields.getTextInputValue(id));
 
 				// 追加するタスクのフォーマットを作成
 				const new_task = {
@@ -539,7 +598,9 @@ function taskManager(client) {
 					// コマンドを実行したチャンネルに通告
 					await action.reply({
 						ephemeral: true,
-						embeds: [new EmbedBuilder().setTitle('名前が被っています'),],
+						embeds: [
+							new EmbedBuilder().setTitle('名前が被っています'),
+						],
 					});
 
 					return;
@@ -549,7 +610,11 @@ function taskManager(client) {
 						// コマンドを実行したチャンネルに通告
 						await action.reply({
 							ephemeral: true,
-							embeds: [new EmbedBuilder().setTitle('2000文字オーバーしています'),],
+							embeds: [
+								new EmbedBuilder().setTitle(
+									'2000文字オーバーしています'
+								),
+							],
 						});
 
 						return;
@@ -564,7 +629,12 @@ function taskManager(client) {
 								embeds: [
 									new EmbedBuilder()
 										.setTitle(task_items[1])
-										.setDescription(`( ${task_items[2]} )[ ${task_items[3]} ]{ ${task_items[4]} }\n【概要】\n${task_items[5]}`),
+										.setDescription(
+											codeBlock(
+												'diff',
+												`-【条件】-\n　(${task_items[2]})[${task_items[3]}]{${task_items[4]}}\n\n+【概要】+\n　${task_items[5]}`
+											)
+										),
 								],
 							});
 
@@ -597,7 +667,9 @@ function taskManager(client) {
 							.messages.fetch();
 
 						// タスク以外のメッセージのみ抽出
-						const del_msg = [...messages.values()].filter((msg) => !id_list.includes(msg.id));
+						const del_msg = [...messages.values()].filter(
+							(msg) => !id_list.includes(msg.id)
+						);
 
 						// もしタスク以外のメッセージが存在したら
 						if (del_msg.length)
@@ -610,7 +682,9 @@ function taskManager(client) {
 			}
 			case 'remove': {
 				// 指定したタスクを削除
-				const task_list = prev_task.filter((prev) => prev.index !== del_task.index);
+				const task_list = prev_task.filter(
+					(prev) => prev.index !== del_task.index
+				);
 
 				// 削除したタスクより後の識別番号を1つ減らしてズレを修正
 				for (const data of task_list) {
@@ -634,7 +708,12 @@ function taskManager(client) {
 					embeds: [
 						new EmbedBuilder()
 							.setTitle('タスクを削除しました')
-							.setDescription(`削除したタスク => ${del_task.name}`),
+							.setDescription(
+								codeBlock(
+									'fix',
+									`削除したタスク　->　${del_task.name}`
+								)
+							),
 					],
 				});
 

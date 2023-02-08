@@ -151,7 +151,10 @@ async function moveRoles(client) {
 				.setTitle('この内容でお間違いありませんか？');
 
 			// 確認画面に表示欄を追加
-			for (const field of input_fields) modal.addComponents(new ActionRowBuilder().addComponents(field));
+			for (const field of input_fields)
+				modal.addComponents(
+					new ActionRowBuilder().addComponents(field)
+				);
 
 			// 作成した画面を返す
 			return modal;
@@ -204,7 +207,8 @@ async function moveRoles(client) {
 			for (const role of add_roles) await action.member.roles.add(role);
 
 			// ロールを除去
-			for (const role of remove_roles) await action.member.roles.remove(role);
+			for (const role of remove_roles)
+				await action.member.roles.remove(role);
 
 			// 送信用テキストの作成
 			let result = await makeRolesList(),

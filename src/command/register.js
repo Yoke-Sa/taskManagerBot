@@ -11,15 +11,15 @@
 require('dotenv').config();
 const { client_id, token } = process.env;
 
-// スラッシュコマンド
-const { SlashCommandBuilder } = require('@discordjs/builders');
+// ユーザー権限
+const { PermissionsBitField } = require('discord.js');
 
 // discord API
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
 
-// ユーザー権限
-const { PermissionsBitField } = require('discord.js');
+// スラッシュコマンド
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 // 登録するコマンドリスト
 const commands = [
