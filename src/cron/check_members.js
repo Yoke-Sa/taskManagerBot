@@ -72,9 +72,15 @@ async function checkMembers(client) {
 		const msg_array = [...messages.values()];
 
 		// 自身(タスク管理bot)が送った最新のメッセージを取得
+		const last_msg = msg_array.find((msg) => msg.author.id === client_id);
+
+		// 直近100件に自身が送ったメッセージが無ければ処理を打ち切る
+		if (last_msg === undefined) return;
+
+		// 見つかったメッセージをファイルに上書き
 		fs.writeFileSync(
 			send_path,
-			JSON.stringify(msg_array.find((msg) => msg.authorId === client_id))
+			JSON.stringify(last_msg)
 		);
 	}
 
@@ -171,10 +177,8 @@ async function checkMembers(client) {
 			// 一日一回は通告
 			sendNotification(
 				'今日も平和',
-				`今日は${getMonth()}${getDay()}です！\n	${
-					random_text[rand(0, random_text.length - 1)]
-				}\n<@${
-					members_list[rand(0, members_list.length - 1)].id
+				`今日は${getMonth()}${getDay()}です！\n	${random_text[rand(0, random_text.length - 1)]
+				}\n<@${members_list[rand(0, members_list.length - 1)].id
 				}>さん！`
 			).then(async () => {
 				// Discordに送信が完了したタイミングで、送信したメッセージを取得しファイルに保存

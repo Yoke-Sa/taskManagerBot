@@ -69,9 +69,5 @@ client.login(token);
 
 // ネットワーク接続エラーでプログラムがクラッシュしないようにする
 process.on('multipleResolves', (type, promise, reason) => {
-	if (
-		(reason?.toLocaleString() || '') ===
-		'Error: Cannot perform IP discovery - socket closed'
-	)
-		return;
+	if ((reason?.toLocaleString() || '') === 'Error: Cannot perform IP discovery - socket closed') return;
 });

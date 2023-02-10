@@ -14,11 +14,11 @@ const { guild_id, role_id } = process.env;
 // 使用するものだけ読み込む
 const { Events } = require('discord.js');
 const {
-	StringSelectMenuBuilder,
-	EmbedBuilder,
 	ActionRowBuilder,
 	codeBlock,
+	EmbedBuilder,
 	ModalBuilder,
+	StringSelectMenuBuilder,
 	TextInputBuilder,
 } = require('@discordjs/builders');
 
