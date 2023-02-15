@@ -29,10 +29,10 @@ async function mentionEntrustee(client) {
 	 * - 納期が一週間以内のタスクがあれば配列にして返す
 	 * @returns { JSON[] } 納期が一週間以内に迫ったタスクのリスト
 	 */
-	const getWithinWeekTask = () => {
+	const getWithinWeekTask = async () => {
 		// ファイルからデータを読み込む
-		const accept_list = fs
-			.readFile(task_path)
+		const accept_list = (await fs
+			.readFile(task_path))
 			.filter((task) => task.isAssigned) // 受注済タスクのみ抽出
 			.map((task) => task);
 
@@ -110,13 +110,13 @@ async function mentionEntrustee(client) {
 						if (
 							!(
 								0 <=
-									max_days[today.month - 1] -
-										today.day +
-										Number(date.day) &&
 								max_days[today.month - 1] -
-									today.day +
-									Number(date.day) <=
-									7
+								today.day +
+								Number(date.day) &&
+								max_days[today.month - 1] -
+								today.day +
+								Number(date.day) <=
+								7
 							)
 						)
 							continue;
@@ -159,7 +159,7 @@ async function mentionEntrustee(client) {
 	if (!(await fs.fileExists(task_path))) return;
 
 	// 納期が一週間以内に迫ったタスクのリストを取得
-	const looming_task = getWithinWeekTask();
+	const looming_task = await getWithinWeekTask();
 
 	// メッセージを送信
 	for (const value of looming_task) {

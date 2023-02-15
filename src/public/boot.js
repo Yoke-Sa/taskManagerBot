@@ -32,6 +32,7 @@ const taskCommand = require('../command/response/task');
 const mentionEntrustee = require('../cron/mention_entrustee');
 const checkMembers = require('../cron/check_members');
 const moveRoles = require('../cron/move_roles');
+const modals = require('../command/response/modal');
 
 // 起動後に一度だけ呼ばれる
 client.once('ready', () => {
@@ -52,6 +53,8 @@ client.once('ready', () => {
 
 	// コマンドが実行されたら処理が実行される
 	taskCommand(client);
+
+	modals(client);
 
 	// 朝7時になったタイミングでメンバーチェック(何かしら報告する)
 	cron.schedule(check_interval, () => {

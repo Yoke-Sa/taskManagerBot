@@ -171,22 +171,20 @@ async function checkMembers(client) {
 			// 一日一回は通告
 			sendNotification(
 				'今日も平和',
-				`今日は${getMonth()}${getDay()}です！\n	${
-					random_text[rand(0, random_text.length - 1)]
-				}\n<@${
-					members_list[rand(0, members_list.length - 1)].id
+				`今日は${getMonth()}${getDay()}です！\n	${random_text[rand(0, random_text.length - 1)]
+				}\n<@${members_list[rand(0, members_list.length - 1)].id
 				}>さん！`
 			).then(async () => {
 				// Discordに送信が完了したタイミングで、送信したメッセージを取得しファイルに保存
 				await getLastNotification();
 			});
 		}
-
-		// ファイルのデータが現在のデータと異なる場合
-		if (JSON.stringify(members_list) !== JSON.stringify(prev_list))
-			// メンバーリストを上書き
-			await fs.writeFile(members_path, JSON.stringify(members_list));
 	}
+
+	// ファイルのデータが現在のデータと異なる場合
+	if (JSON.stringify(members_list) !== JSON.stringify(prev_list))
+		// メンバーリストを上書き
+		await fs.writeFile(members_path, JSON.stringify(members_list));
 
 	// ファイルからデータを読み込む
 	const task_list = (await fs.fileExists(task_path))

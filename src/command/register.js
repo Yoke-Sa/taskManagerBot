@@ -48,6 +48,12 @@ const commands = [
 		.setDescription('タスクを登録します')
 		// 管理者権限を有するメンバーのみ閲覧可能
 		.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
+	// タスク登録コマンド
+	new SlashCommandBuilder()
+		.setName('modals')
+		.setDescription('もおおおおおおおお、だる。')
+		// 管理者権限を有するメンバーのみ閲覧可能
+		.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
 ].map((cmd) => cmd.toJSON()); // JSONオブジェクトに変換
 
 /**
