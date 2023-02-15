@@ -39,7 +39,7 @@ const setFirstFlag = require('./set_flag');
  */
 async function checkMembers(client) {
 	// 一日一回だけ実行
-	if (!setFirstFlag()) return;
+	if (!(await setFirstFlag())) return;
 
 	// 通信先のdiscordサーバーを取得
 	const guild = client.guilds.cache.get(guild_id);
@@ -72,15 +72,9 @@ async function checkMembers(client) {
 		const msg_array = [...messages.values()];
 
 		// 自身(タスク管理bot)が送った最新のメッセージを取得
-		const last_msg = msg_array.find((msg) => msg.author.id === client_id);
-
-		// 直近100件に自身が送ったメッセージが無ければ処理を打ち切る
-		if (last_msg === undefined) return;
-
-		// 見つかったメッセージをファイルに上書き
-		fs.writeFileSync(
+		await fs.writeFile(
 			send_path,
-			JSON.stringify(last_msg)
+			JSON.stringify(msg_array.find((msg) => msg.author.id === client_id))
 		);
 	}
 
@@ -93,8 +87,8 @@ async function checkMembers(client) {
 		}));
 
 	// ファイルからデータを読み込む
-	const prev_list = fs.existsSync(members_path)
-		? JSON.parse(fs.readFileSync(members_path))
+	const prev_list = (await fs.fileExists(members_path))
+		? await fs.readFile(members_path)
 		: [];
 
 	// メンバーリストのデータが存在してれば処理を行う
@@ -172,13 +166,15 @@ async function checkMembers(client) {
 			});
 		} else if (!new_members.length && !left_members.length) {
 			// 毎日報告用ランダムメッセージ
-			const random_text = JSON.parse(fs.readFileSync(random_path));
+			const random_text = await fs.readFile(random_path);
 
 			// 一日一回は通告
 			sendNotification(
 				'今日も平和',
-				`今日は${getMonth()}${getDay()}です！\n	${random_text[rand(0, random_text.length - 1)]
-				}\n<@${members_list[rand(0, members_list.length - 1)].id
+				`今日は${getMonth()}${getDay()}です！\n	${
+					random_text[rand(0, random_text.length - 1)]
+				}\n<@${
+					members_list[rand(0, members_list.length - 1)].id
 				}>さん！`
 			).then(async () => {
 				// Discordに送信が完了したタイミングで、送信したメッセージを取得しファイルに保存
@@ -189,12 +185,12 @@ async function checkMembers(client) {
 		// ファイルのデータが現在のデータと異なる場合
 		if (JSON.stringify(members_list) !== JSON.stringify(prev_list))
 			// メンバーリストを上書き
-			fs.writeFileSync(members_path, JSON.stringify(members_list));
+			await fs.writeFile(members_path, JSON.stringify(members_list));
 	}
 
 	// ファイルからデータを読み込む
-	const task_list = fs.existsSync(task_path)
-		? JSON.parse(fs.readFileSync(task_path))
+	const task_list = (await fs.fileExists(task_path))
+		? await fs.readFile(task_path)
 		: [];
 
 	// タスクが無ければ処理を打ち切る
@@ -204,7 +200,7 @@ async function checkMembers(client) {
 	const missing_list = [];
 
 	// タスク受託者の更新
-	for (const task of task_list) {
+	for await (const task of task_list) {
 		// 未受注タスクはスキップ
 		if (!task.isAssigned) continue;
 
@@ -222,14 +218,15 @@ async function checkMembers(client) {
 	}
 
 	// タスクを持ち逃げしたメンバーがいた場合
-	if (missing_list.length)
+	if (missing_list.length) {
 		sendNotification(
 			'タスク所持済みの脱退者を検出しました',
 			`<@${missing_list.join('>\n<@')}>`
 		);
 
-	// タスクデータを上書き
-	fs.writeFileSync(task_path, JSON.stringify(task_list));
+		// タスクデータを上書き
+		await fs.writeFile(task_path, JSON.stringify(task_list));
+	}
 }
 
 // 外部ファイルから参照可能にする
