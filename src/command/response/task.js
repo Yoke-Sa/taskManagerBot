@@ -58,8 +58,8 @@ function taskManager(client) {
 		switch (commandName) {
 			case 'task_accept': {
 				// ファイルが存在していればデータを読み込む
-				const task_list = fs.existsSync(task_path)
-					? fs.readFileSync(task_path)
+				const task_list = (await fs.fileExists(task_path))
+					? await fs.readFile(task_path)
 					: [];
 
 				// データの有無で処理分岐
@@ -77,7 +77,7 @@ function taskManager(client) {
 					return;
 				} else {
 					// 未受注かつコマンド実行者のロールを含むタスクのみ抽出
-					const unassigned_tasks = JSON.parse(task_list).filter(
+					const unassigned_tasks = task_list.filter(
 						(task) =>
 							!task.hasOwnProperty('entrustee') &&
 							task.roles.some((role) =>
@@ -133,8 +133,8 @@ function taskManager(client) {
 			}
 			case 'task_register': {
 				// ファイルが存在していればデータを読み込む
-				const unassigned_tasks = fs.existsSync(task_path)
-					? JSON.parse(fs.readFileSync(task_path)).filter(
+				const unassigned_tasks = (await fs.fileExists(task_path))
+					? (await fs.readFile(task_path)).filter(
 							(task) => !task.isAssigned // 未受注タスクのみ抽出
 					  )
 					: [];
@@ -196,8 +196,8 @@ function taskManager(client) {
 				const target = cmd.options.getNumber('index');
 
 				// ファイルが存在していればデータを貰う
-				const task_list = fs.existsSync(task_path)
-					? fs.readFileSync(task_path)
+				const task_list = (await fs.fileExists(task_path))
+					? await fs.readFile(task_path)
 					: [];
 
 				// データの有無で処理分岐
@@ -215,7 +215,7 @@ function taskManager(client) {
 					return;
 				} else {
 					// 削除前のタスクデータを取得
-					prev_task = JSON.parse(task_list);
+					prev_task = task_list;
 
 					// タスクの識別番号として存在する数値かどうかで処理分岐
 					if (target > prev_task.length) {
@@ -327,7 +327,7 @@ function taskManager(client) {
 			 * タスクの設定項目について5つの入力欄を作成し、配列で返す
 			 * @returns { TextInputBuilder[] }  TextInputBuilderで作成した入力欄の配列
 			 */
-			const makeTextInputArray = () => {
+			const makeTextInputArray = async () => {
 				// 戻り値として渡すTextInputBuilderの配列
 				const results = [];
 
@@ -338,7 +338,7 @@ function taskManager(client) {
 				 * ファイルから読み込んだタスクの設定項目に関するJSONオブジェクト
 				 * @type { JSON[] }
 				 */
-				const task_options = JSON.parse(fs.readFileSync(format_path));
+				const task_options = await fs.readFile(format_path);
 
 				// 設定項目用の入力欄を配列に格納
 				for (const option of task_options) {
@@ -367,7 +367,7 @@ function taskManager(client) {
 				.setTitle('タスクの設定');
 
 			// 設定画面に入力欄を追加
-			const fields_array = makeTextInputArray();
+			const fields_array = await makeTextInputArray();
 			for (const field of fields_array)
 				modal.addComponents(
 					new ActionRowBuilder().addComponents(field)
@@ -453,7 +453,7 @@ function taskManager(client) {
 					return;
 				} else {
 					// ファイルからデータを読み込む
-					const task_list = JSON.parse(fs.readFileSync(task_path));
+					const task_list = await fs.readFile(task_path);
 
 					// 受注タスクの名前、メッセージID、同時受注による被り防止フラグ
 					let accept_name = '',
@@ -504,7 +504,10 @@ function taskManager(client) {
 						isFirst = false;
 
 						// タスクデータを上書き
-						fs.writeFileSync(task_path, JSON.stringify(task_list));
+						await fs.writeFile(
+							task_path,
+							JSON.stringify(task_list)
+						);
 
 						// お仕事チャンネルへタスクを送信し、メッセージIDを取得
 						await action.guild.channels.cache
@@ -576,9 +579,9 @@ function taskManager(client) {
 				let task_list = [];
 
 				// ファイルが存在する場合
-				if (fs.existsSync(task_path)) {
+				if (await fs.fileExists(task_path)) {
 					// ファイルからデータを読み込む
-					task_list = JSON.parse(fs.readFileSync(task_path));
+					task_list = await fs.readFile(task_path);
 
 					// 追加するタスクの識別番号にデータ数を足す
 					new_task.index += task_list.length;
@@ -654,7 +657,10 @@ function taskManager(client) {
 						task_list.push(new_task);
 
 						// タスクデータを上書き
-						fs.writeFileSync(task_path, JSON.stringify(task_list));
+						await fs.writeFile(
+							task_path,
+							JSON.stringify(task_list)
+						);
 
 						// タスクのメッセージIDリストを作成
 						const id_list = [];
@@ -693,7 +699,7 @@ function taskManager(client) {
 				}
 
 				// タスクデータを上書き
-				fs.writeFileSync(task_path, JSON.stringify(task_list));
+				await fs.writeFile(task_path, JSON.stringify(task_list));
 
 				// お仕事一覧に貼られたメッセージからIDで指定して削除対象タスクのメッセージを取得し、削除
 				await action.guild.channels.cache

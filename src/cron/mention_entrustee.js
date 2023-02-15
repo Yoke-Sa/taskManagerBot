@@ -31,7 +31,8 @@ async function mentionEntrustee(client) {
 	 */
 	const getWithinWeekTask = () => {
 		// ファイルからデータを読み込む
-		const accept_list = JSON.parse(fs.readFileSync(task_path))
+		const accept_list = fs
+			.readFile(task_path)
 			.filter((task) => task.isAssigned) // 受注済タスクのみ抽出
 			.map((task) => task);
 
@@ -61,7 +62,10 @@ async function mentionEntrustee(client) {
 			// アロー関数にしたからreturnいらないと思うけど明示しておく
 			return {
 				year: date.substring(0, date.indexOf('/')),
-				month: date.substring(date.indexOf('/') + 1, date.lastIndexOf('/')),
+				month: date.substring(
+					date.indexOf('/') + 1,
+					date.lastIndexOf('/')
+				),
 				day: date.substring(date.lastIndexOf('/') + 1),
 			};
 		};
@@ -84,7 +88,13 @@ async function mentionEntrustee(client) {
 				// 納期が同じ月かどうかで処理分岐
 				if (date.month === today.month) {
 					// 日にちの減算結果が7以下でなければスキップ、そうであれば納期を配列に入れる
-					if (!(0 <= date.day - today.day && date.day - today.day <= 7)) continue;
+					if (
+						!(
+							0 <= date.day - today.day &&
+							date.day - today.day <= 7
+						)
+					)
+						continue;
 
 					date_list.push({
 						deadline: date,
@@ -92,10 +102,25 @@ async function mentionEntrustee(client) {
 					});
 				} else {
 					// 納期が来月だった場合
-					if (date.month - today.month === 1 || date.month - today.month === 11) {
+					if (
+						date.month - today.month === 1 ||
+						date.month - today.month === 11
+					) {
 						// 今月の日付最大値と今日の日付の減算結果に納期の日付を加えたものが7以下でなければスキップ、そうであれば納期を配列に入れる
-						if (!(0 <= max_days[today.month - 1] - today.day + Number(date.day) && max_days[today.month - 1] - today.day + Number(date.day) <= 7)) continue;
-						
+						if (
+							!(
+								0 <=
+									max_days[today.month - 1] -
+										today.day +
+										Number(date.day) &&
+								max_days[today.month - 1] -
+									today.day +
+									Number(date.day) <=
+									7
+							)
+						)
+							continue;
+
 						date_list.push({
 							deadline: date,
 							remain:
@@ -116,8 +141,11 @@ async function mentionEntrustee(client) {
 				});
 
 			// タスクデータに残り日数を加える
-			const results = accept_list.filter((task) => looming_deadline.some((value) => task.deadline === value.date));
-			for (let i = 0, len = looming_deadline.length; i < len; i++) results[i].remain = looming_deadline[i].remain;
+			const results = accept_list.filter((task) =>
+				looming_deadline.some((value) => task.deadline === value.date)
+			);
+			for (let i = 0, len = looming_deadline.length; i < len; i++)
+				results[i].remain = looming_deadline[i].remain;
 
 			// タスクの配列を返す
 			return results;
@@ -128,7 +156,7 @@ async function mentionEntrustee(client) {
 	};
 
 	// タスクデータがある場合のみ処理
-	if (!fs.existsSync(task_path)) return;
+	if (!(await fs.fileExists(task_path))) return;
 
 	// 納期が一週間以内に迫ったタスクのリストを取得
 	const looming_task = getWithinWeekTask();

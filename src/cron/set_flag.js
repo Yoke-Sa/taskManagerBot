@@ -21,7 +21,7 @@ const { getTime } = require('../function/date');
  * - 一日一回のみ送るためのフラグをチェックし、真偽値で返す
  *      - 真ならば未送信、偽ならば送信済みであることを示す
  */
-function setFirstFlag() {
+async function setFirstFlag() {
 	/**
 	 * - 指定時刻を超えたかどうかチェックし、真偽値を返す
 	 */
@@ -38,10 +38,13 @@ function setFirstFlag() {
 		// 要素毎に大小を比較
 		for (let i = 0; i < 3; i++) {
 			// 同じであればスキップして次の要素を比較
-			if (schedule[i] === now[i]) continue;
-			else if (schedule[i] < now[i])
+			if (Number(schedule[i]) === Number(now[i])) continue;
+			else if (Number(schedule[i]) < Number(now[i]))
 				return true; // 指定時刻を超えていたらtrueを返す
-			else return false; // 超えていなければfalse
+			else {
+				if (i < 2) continue;
+				return false; // 超えていなければfalse
+			}
 		}
 
 		// 全ての要素をスキップした時 -> 指定時刻と同時刻であるためtrueを返す
@@ -51,22 +54,22 @@ function setFirstFlag() {
 	/**
 	 * - 前回送った日にちから1日経過したかどうかチェックし、真偽値を返す
 	 */
-	function hasDayPassed() {
+	async function hasDayPassed() {
 		// 現在の日にちを数値で取得 -> 1/24ならば24が返る
 		const today = new Date().getDate();
 
 		// ファイルから最後に送信した通告メッセージを受け取る
-		const prev = JSON.parse(fs.readFileSync(send_path));
+		const prev = await fs.readFile(send_path);
 
 		// 日にちの差があるならば真、なければ偽
 		return today !== new Date(prev.createdTimestamp).getDate();
 	}
 
 	// そもそも送ったメッセージのデータが無い場合は真とみなす
-	if (!fs.existsSync(send_path)) return true;
+	if (!(await fs.fileExists(send_path))) return true;
 
 	// 指定時間を超えていて尚且つ日付が違う場合は真とみなす
-	if (hasTimePassed() && hasDayPassed()) return true;
+	if (hasTimePassed() && (await hasDayPassed())) return true;
 
 	// それ以外は偽とみなす
 	return false;
